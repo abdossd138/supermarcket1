@@ -1,0 +1,212 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ---------------------------------------------------------
+    // Global Hardened Primitives
+    // ---------------------------------------------------------
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // ---------------------------------------------------------
+    // Validation Blueprints
+    // ---------------------------------------------------------
+    function isValidStoreConfig(data) {
+      return data.keys().hasAll([
+        'storeName', 'siteStyle', 'logoMode', 'logoIcon', 'logoShape',
+        'cardStyle', 'heroStyle', 'fontFamily', 'gridColumns',
+        'showHero', 'showAnnouncement', 'showFloatingWhatsapp', 'showEgyptianBadge',
+        'deliveryFee', 'freeDeliveryThreshold', 'minOrderAmount', 'currencyLabel', 'updatedAt'
+      ]) && data.keys().hasOnly([
+        'storeName', 'storeSubtitle', 'brandBadge', 'logoMode', 'logoIcon', 'logoShape', 'logoUrl',
+        'siteStyle', 'cardStyle', 'heroStyle', 'fontFamily', 'gridColumns',
+        'showHero', 'showAnnouncement', 'showFloatingWhatsapp', 'showEgyptianBadge',
+        'heroBadge', 'heroTitle', 'heroSubtitle', 'heroImage', 'announcement',
+        'phone', 'whatsappNumber', 'deliveryFee', 'freeDeliveryThreshold', 'minOrderAmount',
+        'currencyLabel', 'footerAbout', 'copyrightText', 'updatedAt'
+      ]) &&
+      data.storeName is string && data.storeName.size() >= 1 && data.storeName.size() <= 100 &&
+      (!('storeSubtitle' in data) || (data.storeSubtitle is string && data.storeSubtitle.size() <= 240)) &&
+      (!('brandBadge' in data) || (data.brandBadge is string && data.brandBadge.size() <= 50)) &&
+      data.logoMode in ['icon', 'image'] &&
+      data.logoIcon is string && data.logoIcon.size() >= 1 && data.logoIcon.size() <= 40 &&
+      data.logoShape in ['rounded', 'circle', 'square'] &&
+      (!('logoUrl' in data) || (data.logoUrl is string && data.logoUrl.size() <= 120000)) &&
+      data.siteStyle in ['emerald-classic', 'royal-navy', 'crimson-market', 'warm-organic', 'dark-luxury', 'minimal-mono'] &&
+      data.cardStyle in ['rounded', 'pill-soft', 'sharp', 'elevated'] &&
+      data.heroStyle in ['split', 'centered', 'compact'] &&
+      data.fontFamily in ['Cairo', 'Tajawal', 'Almarai'] &&
+      data.gridColumns in [4, 5] &&
+      data.showHero is bool &&
+      data.showAnnouncement is bool &&
+      data.showFloatingWhatsapp is bool &&
+      data.showEgyptianBadge is bool &&
+      (!('heroBadge' in data) || (data.heroBadge is string && data.heroBadge.size() <= 120)) &&
+      (!('heroTitle' in data) || (data.heroTitle is string && data.heroTitle.size() <= 180)) &&
+      (!('heroSubtitle' in data) || (data.heroSubtitle is string && data.heroSubtitle.size() <= 400)) &&
+      (!('heroImage' in data) || (data.heroImage is string && data.heroImage.size() <= 2000)) &&
+      (!('announcement' in data) || (data.announcement is string && data.announcement.size() <= 400)) &&
+      (!('phone' in data) || (data.phone is string && data.phone.size() <= 40)) &&
+      (!('whatsappNumber' in data) || (data.whatsappNumber is string && data.whatsappNumber.size() <= 40)) &&
+      data.deliveryFee is number && data.deliveryFee >= 0 && data.deliveryFee <= 10000 &&
+      data.freeDeliveryThreshold is number && data.freeDeliveryThreshold >= 0 && data.freeDeliveryThreshold <= 100000 &&
+      data.minOrderAmount is number && data.minOrderAmount >= 0 && data.minOrderAmount <= 100000 &&
+      data.currencyLabel is string && data.currencyLabel.size() >= 1 && data.currencyLabel.size() <= 20 &&
+      (!('footerAbout' in data) || (data.footerAbout is string && data.footerAbout.size() <= 500)) &&
+      (!('copyrightText' in data) || (data.copyrightText is string && data.copyrightText.size() <= 200)) &&
+      data.updatedAt == request.time;
+    }
+
+    function isValidCategoryOverride(data) {
+      return data.keys().hasAll(['id', 'name', 'slug', 'icon', 'updatedAt']) &&
+      data.keys().hasOnly(['id', 'name', 'slug', 'icon', 'isDeleted', 'updatedAt']) &&
+      isValidId(data.id) &&
+      data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+      data.slug is string && data.slug.size() >= 1 && data.slug.size() <= 120 &&
+      data.icon is string && data.icon.size() >= 1 && data.icon.size() <= 40 &&
+      (!('isDeleted' in data) || data.isDeleted is bool) &&
+      data.updatedAt == request.time;
+    }
+
+    function isValidProductOverride(data) {
+      return data.keys().hasAll(['id', 'nameArabic', 'sku', 'categoryId', 'price', 'stock', 'isEgyptian', 'updatedAt']) &&
+      data.keys().hasOnly(['id', 'nameArabic', 'nameEnglish', 'sku', 'categoryId', 'price', 'discountPrice', 'stock', 'unit', 'image', 'description', 'isEgyptian', 'featured', 'isDeleted', 'updatedAt']) &&
+      isValidId(data.id) &&
+      data.nameArabic is string && data.nameArabic.size() >= 1 && data.nameArabic.size() <= 200 &&
+      (!('nameEnglish' in data) || (data.nameEnglish is string && data.nameEnglish.size() <= 200)) &&
+      data.sku is string && data.sku.size() >= 1 && data.sku.size() <= 100 &&
+      data.categoryId is string && data.categoryId.size() >= 1 && data.categoryId.size() <= 128 &&
+      data.price is number && data.price >= 0 && data.price <= 1000000 &&
+      (!('discountPrice' in data) || (data.discountPrice is number && data.discountPrice >= 0 && data.discountPrice <= 1000000)) &&
+      data.stock is number && data.stock >= 0 && data.stock <= 1000000 &&
+      (!('unit' in data) || (data.unit is string && data.unit.size() <= 40)) &&
+      (!('image' in data) || (data.image is string && data.image.size() <= 120000)) &&
+      (!('description' in data) || (data.description is string && data.description.size() <= 1000)) &&
+      data.isEgyptian is bool &&
+      (!('featured' in data) || data.featured is bool) &&
+      (!('isDeleted' in data) || data.isDeleted is bool) &&
+      data.updatedAt == request.time;
+    }
+
+    function isValidOrderBase(data) {
+      return data.keys().hasAll(['id', 'customerName', 'phone', 'address', 'items', 'subtotal', 'deliveryFee', 'total', 'paymentMethod', 'status', 'timeSlot', 'createdAt']) &&
+      data.keys().hasOnly(['id', 'customerName', 'phone', 'email', 'address', 'items', 'subtotal', 'deliveryFee', 'total', 'paymentMethod', 'status', 'timeSlot', 'createdAt', 'updatedAt']) &&
+      isValidId(data.id) &&
+      data.customerName is string && data.customerName.size() >= 1 && data.customerName.size() <= 120 &&
+      data.phone is string && data.phone.size() >= 5 && data.phone.size() <= 30 &&
+      (!('email' in data) || (data.email is string && data.email.size() <= 150)) &&
+      data.address is map &&
+      data.items is list && data.items.size() >= 1 && data.items.size() <= 100 && data.items[0] is map &&
+      data.subtotal is number && data.subtotal >= 0 && data.subtotal <= 10000000 &&
+      data.deliveryFee is number && data.deliveryFee >= 0 && data.deliveryFee <= 100000 &&
+      data.total is number && data.total >= 0 && data.total <= 10000000 &&
+      data.paymentMethod is string && data.paymentMethod.size() >= 1 && data.paymentMethod.size() <= 80 &&
+      data.status in ['جديد (New)', 'جاري التجهيز (Processing)', 'في الطريق للتوصيل (Out for Delivery)', 'تم التوصيل بنجاح (Delivered)', 'ملغي (Cancelled)'] &&
+      data.timeSlot is string && data.timeSlot.size() >= 1 && data.timeSlot.size() <= 120 &&
+      data.createdAt is timestamp;
+    }
+
+    function isValidOrderTracking(data) {
+      return data.keys().hasAll(['id', 'status', 'governorate', 'itemCount', 'total', 'timeSlot', 'createdAt']) &&
+      data.keys().hasOnly(['id', 'status', 'governorate', 'itemCount', 'total', 'timeSlot', 'createdAt', 'updatedAt']) &&
+      isValidId(data.id) &&
+      data.status in ['جديد (New)', 'جاري التجهيز (Processing)', 'في الطريق للتوصيل (Out for Delivery)', 'تم التوصيل بنجاح (Delivered)', 'ملغي (Cancelled)'] &&
+      data.governorate is string && data.governorate.size() <= 60 &&
+      data.itemCount is number && data.itemCount >= 1 && data.itemCount <= 1000 &&
+      data.total is number && data.total >= 0 && data.total <= 10000000 &&
+      data.timeSlot is string && data.timeSlot.size() <= 120 &&
+      data.createdAt is timestamp;
+    }
+
+    // ---------------------------------------------------------
+    // Collection Match Blocks (PIN-gated Admin UI, schema-validated Firestore)
+    // ---------------------------------------------------------
+
+    // Connection check document
+    match /test/connection {
+      allow get: if true;
+    }
+
+    // Global store settings (public read, schema-validated write from Admin Mode)
+    match /store_config/{configId} {
+      allow get: if isValidId(configId);
+      allow create, update: if isValidId(configId) && configId == 'main' && isValidStoreConfig(incoming());
+      allow delete: if false;
+    }
+
+    // Global category overrides (public read, schema-validated write/delete from Admin Mode)
+    match /category_overrides/{categoryId} {
+      allow get: if isValidId(categoryId);
+      allow list: if resource.data.name is string;
+      allow create, update: if isValidId(categoryId) && incoming().id == categoryId && isValidCategoryOverride(incoming());
+      allow delete: if isValidId(categoryId);
+    }
+
+    // Global product overrides (public read, schema-validated write/delete from Admin Mode)
+    match /catalog_overrides/{productId} {
+      allow get: if isValidId(productId);
+      allow list: if resource.data.sku is string;
+      allow create, update: if isValidId(productId) && incoming().id == productId && isValidProductOverride(incoming());
+      allow delete: if isValidId(productId);
+    }
+
+    // Customer orders (read/status-update for Admin Mode; atomic validated create from Storefront)
+    match /orders/{orderId} {
+      allow get: if isValidId(orderId);
+      allow list: if resource.data.id is string && resource.data.status is string;
+      allow create: if isValidId(orderId) &&
+        isValidOrderBase(incoming()) &&
+        incoming().id == orderId &&
+        incoming().status == 'جديد (New)' &&
+        incoming().createdAt == request.time &&
+        existsAfter(/databases/$(database)/documents/order_tracking/$(orderId));
+      allow update: if isValidId(orderId) &&
+        isValidOrderBase(incoming()) &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    // Public non-PII tracking lookup by exact order ID & status sync
+    match /order_tracking/{orderId} {
+      allow get: if isValidId(orderId);
+      allow list: if false;
+      allow create: if isValidId(orderId) &&
+        isValidOrderTracking(incoming()) &&
+        incoming().id == orderId &&
+        incoming().status == 'جديد (New)' &&
+        incoming().createdAt == request.time &&
+        existsAfter(/databases/$(database)/documents/orders/$(orderId));
+      allow update: if isValidId(orderId) &&
+        isValidOrderTracking(incoming()) &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    // Deprecated unused collections kept locked down
+    match /customers/{customerId} {
+      allow read, write: if false;
+    }
+
+    match /admins/{uid} {
+      allow read, write: if false;
+    }
+  }
+}

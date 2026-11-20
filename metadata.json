@@ -1,0 +1,6 @@
+{
+  "name": "الماركت المصري - Al-Market Al-Masry",
+  "description": "High-volume Egyptian supermarket chain e-commerce platform with Arabic localization, Egyptian products, and automated WhatsApp checkout.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

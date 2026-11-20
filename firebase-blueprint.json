@@ -1,0 +1,225 @@
+{
+  "entities": {
+    "StoreConfig": {
+      "title": "StoreConfig",
+      "description": "Global storefront branding, logo, visual theme preset, layout options, and operational settings.",
+      "type": "object",
+      "properties": {
+        "storeName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "storeSubtitle": { "type": "string", "maxLength": 240 },
+        "brandBadge": { "type": "string", "maxLength": 50 },
+        "logoMode": { "type": "string", "enum": ["icon", "image"] },
+        "logoIcon": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "logoShape": { "type": "string", "enum": ["rounded", "circle", "square"] },
+        "logoUrl": { "type": "string", "maxLength": 120000 },
+        "siteStyle": { "type": "string", "enum": ["emerald-classic", "royal-navy", "crimson-market", "warm-organic", "dark-luxury", "minimal-mono"] },
+        "cardStyle": { "type": "string", "enum": ["rounded", "pill-soft", "sharp", "elevated"] },
+        "heroStyle": { "type": "string", "enum": ["split", "centered", "compact"] },
+        "fontFamily": { "type": "string", "enum": ["Cairo", "Tajawal", "Almarai"] },
+        "gridColumns": { "type": "number" },
+        "showHero": { "type": "boolean" },
+        "showAnnouncement": { "type": "boolean" },
+        "showFloatingWhatsapp": { "type": "boolean" },
+        "showEgyptianBadge": { "type": "boolean" },
+        "heroBadge": { "type": "string", "maxLength": 120 },
+        "heroTitle": { "type": "string", "maxLength": 180 },
+        "heroSubtitle": { "type": "string", "maxLength": 400 },
+        "heroImage": { "type": "string", "maxLength": 2000 },
+        "announcement": { "type": "string", "maxLength": 400 },
+        "phone": { "type": "string", "maxLength": 40 },
+        "whatsappNumber": { "type": "string", "maxLength": 40 },
+        "deliveryFee": { "type": "number" },
+        "freeDeliveryThreshold": { "type": "number" },
+        "minOrderAmount": { "type": "number" },
+        "currencyLabel": { "type": "string", "minLength": 1, "maxLength": 20 },
+        "footerAbout": { "type": "string", "maxLength": 500 },
+        "copyrightText": { "type": "string", "maxLength": 200 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "storeName",
+        "siteStyle",
+        "logoMode",
+        "logoIcon",
+        "logoShape",
+        "cardStyle",
+        "heroStyle",
+        "fontFamily",
+        "gridColumns",
+        "showHero",
+        "showAnnouncement",
+        "showFloatingWhatsapp",
+        "showEgyptianBadge",
+        "deliveryFee",
+        "freeDeliveryThreshold",
+        "minOrderAmount",
+        "currencyLabel",
+        "updatedAt"
+      ]
+    },
+    "CategoryOverride": {
+      "title": "CategoryOverride",
+      "description": "Global category addition, edit, or deletion marker.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "slug": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "icon": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "isDeleted": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "slug", "icon", "updatedAt"]
+    },
+    "ProductOverride": {
+      "title": "ProductOverride",
+      "description": "Global product creation, update, or deletion marker synced across all visitors.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "nameArabic": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "nameEnglish": { "type": "string", "maxLength": 200 },
+        "sku": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "categoryId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "price": { "type": "number" },
+        "discountPrice": { "type": "number" },
+        "stock": { "type": "number" },
+        "unit": { "type": "string", "maxLength": 40 },
+        "image": { "type": "string", "maxLength": 120000 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "isEgyptian": { "type": "boolean" },
+        "featured": { "type": "boolean" },
+        "isDeleted": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "nameArabic", "sku", "categoryId", "price", "stock", "isEgyptian", "updatedAt"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Private customer order with delivery details and itemized list.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "customerName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "phone": { "type": "string", "minLength": 5, "maxLength": 30 },
+        "email": { "type": "string", "maxLength": 150 },
+        "address": { "type": "object" },
+        "items": { "type": "array" },
+        "subtotal": { "type": "number" },
+        "deliveryFee": { "type": "number" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "status": {
+          "type": "string",
+          "enum": [
+            "جديد (New)",
+            "جاري التجهيز (Processing)",
+            "في الطريق للتوصيل (Out for Delivery)",
+            "تم التوصيل بنجاح (Delivered)",
+            "ملغي (Cancelled)"
+          ]
+        },
+        "timeSlot": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "customerName",
+        "phone",
+        "address",
+        "items",
+        "subtotal",
+        "deliveryFee",
+        "total",
+        "paymentMethod",
+        "status",
+        "timeSlot",
+        "createdAt"
+      ]
+    },
+    "OrderTracking": {
+      "title": "OrderTracking",
+      "description": "Public non-PII tracking projection accessible strictly by exact order ID.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "status": {
+          "type": "string",
+          "enum": [
+            "جديد (New)",
+            "جاري التجهيز (Processing)",
+            "في الطريق للتوصيل (Out for Delivery)",
+            "تم التوصيل بنجاح (Delivered)",
+            "ملغي (Cancelled)"
+          ]
+        },
+        "governorate": { "type": "string", "maxLength": 60 },
+        "itemCount": { "type": "number" },
+        "total": { "type": "number" },
+        "timeSlot": { "type": "string", "maxLength": 120 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "status", "governorate", "itemCount", "total", "timeSlot", "createdAt"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Admin-only customer record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "phone": { "type": "string", "minLength": 5, "maxLength": 30 },
+        "email": { "type": "string", "maxLength": 150 },
+        "governorate": { "type": "string", "maxLength": 60 },
+        "totalOrders": { "type": "number" },
+        "totalSpent": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "phone", "governorate", "totalOrders", "totalSpent", "updatedAt"]
+    },
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Authorized admin UID registry.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 150 },
+        "role": { "type": "string", "enum": ["admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "role", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/store_config/{configId}": {
+      "schema": { "$ref": "#/entities/StoreConfig" },
+      "description": "Global store configuration (logo, name, theme preset, layout, delivery fees)."
+    },
+    "/category_overrides/{categoryId}": {
+      "schema": { "$ref": "#/entities/CategoryOverride" },
+      "description": "Global category modifications overlaid onto base seed categories."
+    },
+    "/catalog_overrides/{productId}": {
+      "schema": { "$ref": "#/entities/ProductOverride" },
+      "description": "Global product additions, edits, and deletions overlaid onto base catalog."
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Private customer orders containing delivery addresses and phone numbers (admin-only reads)."
+    },
+    "/order_tracking/{orderId}": {
+      "schema": { "$ref": "#/entities/OrderTracking" },
+      "description": "Non-PII order status document allowing exact-ID tracking lookup."
+    },
+    "/customers/{customerId}": {
+      "schema": { "$ref": "#/entities/Customer" },
+      "description": "Admin-only aggregated customer database."
+    },
+    "/admins/{uid}": {
+      "schema": { "$ref": "#/entities/AdminUser" },
+      "description": "Authorized admin users for multi-device and buyer administration."
+    }
+  }
+}
